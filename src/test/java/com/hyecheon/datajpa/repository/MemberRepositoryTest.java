@@ -1,14 +1,17 @@
 package com.hyecheon.datajpa.repository;
 
+import com.hyecheon.datajpa.dto.MemberDto;
 import com.hyecheon.datajpa.entity.Member;
+import com.hyecheon.datajpa.entity.Team;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -16,6 +19,8 @@ class MemberRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    TeamRepository teamRepository;
 
     @Test
     void testMember() {
@@ -28,4 +33,102 @@ class MemberRepositoryTest {
         assertThat(findMember.getUsername()).isEqualTo(member.getUsername());
         assertThat(findMember).isEqualTo(member);
     }
+
+    @Test
+    void basicCRUD() {
+        final Member member1 = new Member("member1");
+        final Member member2 = new Member("member2");
+
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        //단건 조회 검
+        final Member findMember1 = memberRepository.findById(member1.getId()).get();
+        final Member findMember2 = memberRepository.findById(member2.getId()).get();
+
+        assertThat(findMember1).isEqualTo(member1);
+        assertThat(findMember2).isEqualTo(member2);
+
+        //리스트 조회 검증
+        final List<Member> all = memberRepository.findAll();
+        assertThat(all.size()).isEqualTo(2);
+
+        //카운트 검증
+        long count = memberRepository.count();
+        assertThat(count).isEqualTo(2);
+
+        //삭제 검증
+        memberRepository.delete(member1);
+        memberRepository.delete(member2);
+
+        long deletedCount = memberRepository.count();
+        assertThat(deletedCount).isEqualTo(0);
+    }
+
+    @Test
+    void findByUsernameAndAgeGreaterThen() {
+        final Member m1 = new Member("AAA", 10);
+        final Member m2 = new Member("AAA", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+        final List<Member> result = memberRepository.findByUsernameAndAgeGreaterThan("AAA", 15);
+        assertThat(result.get(0).getUsername()).isEqualTo("AAA");
+        assertThat(result.get(0).getAge()).isEqualTo(20);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    void testQuery() {
+        final Member m1 = new Member("AAA", 10);
+        final Member m2 = new Member("AAA", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        final List<Member> result = memberRepository.findMember("AAA", 10);
+
+        assertThat(result.get(0)).isEqualTo(m1);
+    }
+
+    @Test
+    void findUsernameList() {
+        final Member m1 = new Member("AAA", 10);
+        final Member m2 = new Member("AAA", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        final List<String> ussernameList = memberRepository.findUsernameList();
+
+        for (String s : ussernameList) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    void findMemberDto() {
+        final Team team = new Team("teamA");
+        teamRepository.save(team);
+
+        final Member m1 = new Member("AAA", 10, team);
+        memberRepository.save(m1);
+
+        final List<MemberDto> memberDto = memberRepository.findMemberDto();
+        for (MemberDto dto : memberDto) {
+            System.out.println("dto = " + dto);
+        }
+    }
+
+    @Test
+    void findByNames() {
+        final Member m1 = new Member("AAA", 10);
+        final Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        final List<Member> ussernameList = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+
+        for (Member m : ussernameList) {
+            System.out.println("m = " + m);
+        }
+    }
+
 }
