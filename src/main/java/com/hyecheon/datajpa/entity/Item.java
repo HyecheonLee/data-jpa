@@ -1,6 +1,5 @@
 package com.hyecheon.datajpa.entity;
 
-import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
@@ -14,8 +13,8 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Item implements Persistable<String> {
+@NoArgsConstructor()
+public class Item implements Persistable<Long> {
     @Id
     private Long id;
 
